@@ -8,7 +8,8 @@ const darkColorToken = {
   'neutral-400': '#6B6B6B',
   'neutral-300': '#A0A0A0',
   'neutral-100': '#E0E0E0',
-
+  'skeleton-wave': getColor('neutral-600'),
+  'skeleton-base': getColor('neutral-700'),
   'interaction-standard': 'transparent',
   'interaction-standard-border': getColor('neutral-500'),
   'interaction-standard-hover': 'rgba(0, 0, 0, 0.11)',

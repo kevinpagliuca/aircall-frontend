@@ -1,12 +1,14 @@
 import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { GET_CALL_DETAILS } from '../gql/queries/getCallDetails';
 import { Box, Typography } from '@aircall/tractor';
 import { formatDate, formatDuration } from '../helpers/dates';
+import { CallDetailsResponseType } from '../interfaces/call';
+import { APP_ROUTES } from '../routes';
 
 export const CallDetailsPage = () => {
   const { callId } = useParams();
-  const { loading, error, data } = useQuery(GET_CALL_DETAILS, {
+  const { loading, error, data } = useQuery<CallDetailsResponseType>(GET_CALL_DETAILS, {
     variables: {
       id: callId
     }
@@ -15,7 +17,9 @@ export const CallDetailsPage = () => {
   if (loading) return <p>Loading call details...</p>;
   if (error) return <p>ERROR</p>;
 
-  const { call } = data;
+  const call = data?.call;
+
+  if (!call) return <Navigate to={APP_ROUTES.CALLS_LIST} />;
 
   return (
     <>
@@ -32,7 +36,7 @@ export const CallDetailsPage = () => {
         <div>{`Is archived: ${call.is_archived}`}</div>
         <div>{`To: ${call.to}`}</div>
         <div>{`Via: ${call.via}`}</div>
-        {call.notes?.map((note: Note, index: number) => {
+        {call.notes?.map((note, index) => {
           return <div>{`Note ${index + 1}: ${note.content}`}</div>;
         })}
       </Box>

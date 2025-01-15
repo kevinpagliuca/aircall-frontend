@@ -1,52 +1,94 @@
-import { useState } from 'react';
-
 import {
   Button,
   Form,
   FormItem,
   Grid,
   Icon,
+  Spacer,
   SpinnerOutlined,
-  TextFieldInput
+  TextFieldInput,
+  Typography,
+  useToast
 } from '@aircall/tractor';
 
-import { FormState } from './Login.decl';
+import { LoginFormResolver, LoginFormValues } from './Login.schema';
+import { Controller, useForm } from 'react-hook-form';
+import { useAuth } from '../../contexts/auth';
+import { useNavigate } from 'react-router-dom';
+import { APP_ROUTES } from '../../routes';
 
-interface LoginFormProps {
-  onSubmit: (email: string, password: string) => void;
-  formState: FormState;
-}
+export const LoginForm = () => {
+  const form = useForm<LoginFormValues>({ resolver: LoginFormResolver });
 
-export const LoginForm = ({ onSubmit, formState }: LoginFormProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const { showToast, removeToast } = useToast();
+  const navigate = useNavigate();
+
+  const onSubmit = form.handleSubmit(async data => {
+    const LOGIN_REJECTED = 'LOGIN_REJECTED';
+    try {
+      await login(data);
+      removeToast(LOGIN_REJECTED);
+      navigate(APP_ROUTES.CALLS_LIST, { replace: true });
+    } catch (error) {
+      console.log(error);
+      showToast({
+        id: LOGIN_REJECTED,
+        message: 'Invalid email or password',
+        variant: 'error'
+      });
+    }
+  });
 
   return (
-    <Form
-      onSubmit={e => {
-        e.preventDefault();
-        onSubmit(email, password);
-      }}
-      width="100%"
-    >
+    <Form onSubmit={onSubmit} width="100%">
       <Grid columnGap={4} rowGap={5} gridTemplateColumns="1fr">
-        <FormItem label="Email" name="email">
-          <TextFieldInput
-            placeholder="job@aircall.io"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-        </FormItem>
-        <FormItem label="Password" name="password">
-          <TextFieldInput
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-        </FormItem>
+        <Controller
+          control={form.control}
+          name="username"
+          defaultValue="123123"
+          render={({ field, fieldState }) => (
+            <FormItem label="Username" name="username">
+              <Spacer spaceY={0.5} direction="vertical">
+                <TextFieldInput
+                  placeholder="Enter your username"
+                  validationStatus={!!fieldState.error?.message ? `error` : undefined}
+                  {...field}
+                />
+                {fieldState.error?.message && (
+                  <Typography variant="caption" color="red-800">
+                    {fieldState.error?.message}
+                  </Typography>
+                )}
+              </Spacer>
+            </FormItem>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="password"
+          defaultValue="123123"
+          render={({ field, fieldState }) => (
+            <FormItem label="Password" name="password">
+              <Spacer spaceY={0.5} direction="vertical">
+                <TextFieldInput
+                  placeholder="Enter your password"
+                  type="password"
+                  validationStatus={!!fieldState.error?.message ? `error` : undefined}
+                  {...field}
+                />
+                {fieldState.error?.message && (
+                  <Typography variant="caption" color="red-800">
+                    {fieldState.error?.message}
+                  </Typography>
+                )}
+              </Spacer>
+            </FormItem>
+          )}
+        />
         <FormItem>
-          <Button block type="submit">
-            {formState === 'Pending' ? <Icon component={SpinnerOutlined} spin /> : 'Login'}
+          <Button block type="submit" disabled={Object.keys(form.formState.errors).length > 0}>
+            {form.formState.isSubmitting ? <Icon component={SpinnerOutlined} spin /> : 'Submit'}
           </Button>
         </FormItem>
       </Grid>

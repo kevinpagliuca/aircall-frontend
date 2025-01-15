@@ -1,4 +1,16 @@
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // TODO check that the user is authenticated before displaying the route
-  return <>{children}</>;
+import { Outlet } from 'react-router-dom';
+import { ProtectedLayout } from './ProtectedLayout';
+import { Fragment } from 'react';
+
+interface Props {
+  withLayout?: boolean;
+}
+
+export const ProtectedRoute = ({ withLayout }: Props) => {
+  const Wrapper = withLayout ? ProtectedLayout : Fragment;
+  return (
+    <Wrapper>
+      <Outlet />
+    </Wrapper>
+  );
 };
