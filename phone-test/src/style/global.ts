@@ -1,11 +1,6 @@
 import { createGlobalStyle } from '@xstyled/styled-components';
 
 export const GlobalAppStyle = createGlobalStyle`
-  html, body {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-  }
 
   body {
     background-color: background-01;
@@ -15,11 +10,12 @@ export const GlobalAppStyle = createGlobalStyle`
     display: grid;
     place-items: center;
     grid-template-rows: 1fr;
-    width: 100vw;
     overflow-y: auto;
+    min-height: 100vh;
+    position: relative;
   }
 
-  ::-webkit-scrollbar {
+   ::-webkit-scrollbar {
     display: none;
   }
 `;

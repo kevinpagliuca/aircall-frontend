@@ -1,5 +1,3 @@
-import './App.css';
-
 import { Tractor } from '@aircall/tractor';
 import { RouterProvider } from 'react-router-dom';
 

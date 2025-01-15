@@ -24,7 +24,7 @@ export const AuthProvider = () => {
   const login = useCallback(async (input: LoginInput) => {
     await loginMutation({
       variables: { input },
-      onCompleted: ({ login }: any) => {
+      onCompleted: ({ login }) => {
         const { access_token, refresh_token, user } = login;
         setAccessToken(access_token, true);
         setRefreshToken(refresh_token);

@@ -3,15 +3,13 @@ import { Navigate, useParams } from 'react-router-dom';
 import { GET_CALL_DETAILS } from '../gql/queries/getCallDetails';
 import { Box, Typography } from '@aircall/tractor';
 import { formatDate, formatDuration } from '../helpers/dates';
-import { CallDetailsResponseType } from '../interfaces/call';
 import { APP_ROUTES } from '../routes';
 
 export const CallDetailsPage = () => {
   const { callId } = useParams();
-  const { loading, error, data } = useQuery<CallDetailsResponseType>(GET_CALL_DETAILS, {
-    variables: {
-      id: callId
-    }
+  const { loading, error, data } = useQuery(GET_CALL_DETAILS, {
+    skip: !callId,
+    variables: { id: callId as string }
   });
 
   if (loading) return <p>Loading call details...</p>;
@@ -19,7 +17,7 @@ export const CallDetailsPage = () => {
 
   const call = data?.call;
 
-  if (!call) return <Navigate to={APP_ROUTES.CALLS_LIST} />;
+  if (!call || error) return <Navigate to={APP_ROUTES.CALLS_LIST} />;
 
   return (
     <>

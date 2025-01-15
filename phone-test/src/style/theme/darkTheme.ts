@@ -45,6 +45,7 @@ export const darkTheme = {
     'availability-status-available': getColor('primary-500'),
     'availability-status-busy': getColor('red-500'),
     'availability-status-offline': getColor('neutral-700'),
+
     modes: {
       dark: darkColorToken
     }

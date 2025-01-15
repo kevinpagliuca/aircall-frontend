@@ -26,3 +26,8 @@ export interface PaginatedCallsResponseType {
 export interface CallDetailsResponseType {
   call: Call;
 }
+
+export interface AddCallNoteInput {
+  activityId: string;
+  content: string;
+}

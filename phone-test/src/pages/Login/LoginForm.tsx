@@ -46,9 +46,9 @@ export const LoginForm = () => {
         <Controller
           control={form.control}
           name="username"
-          defaultValue="123123"
+          defaultValue=""
           render={({ field, fieldState }) => (
-            <FormItem label="Username" name="username">
+            <FormItem label="Username" name={field.name}>
               <Spacer spaceY={0.5} direction="vertical">
                 <TextFieldInput
                   placeholder="Enter your username"
@@ -67,9 +67,9 @@ export const LoginForm = () => {
         <Controller
           control={form.control}
           name="password"
-          defaultValue="123123"
+          defaultValue=""
           render={({ field, fieldState }) => (
-            <FormItem label="Password" name="password">
+            <FormItem label="Password" name={field.name}>
               <Spacer spaceY={0.5} direction="vertical">
                 <TextFieldInput
                   placeholder="Enter your password"

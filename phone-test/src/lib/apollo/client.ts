@@ -3,16 +3,20 @@ import {
   InMemoryCache,
   FetchResult,
   ApolloLink,
-  createHttpLink
+  createHttpLink,
+  split
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
-import { Observable } from '@apollo/client/utilities';
+import { getMainDefinition, Observable } from '@apollo/client/utilities';
 import { GraphQLError } from 'graphql';
 import { API_BASE_URL } from '../../constants/app';
 import { REFRESH_TOKEN_V2 } from '../../gql/mutations';
 import { COOKIE_NAMES } from '../../constants/cookies';
 import { RefreshTokenResponseType } from '../../interfaces/auth';
+
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { WebSocketLink } from '@apollo/client/link/ws';
 
 const getAccessToken = () => {
   const accessToken = localStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN);
@@ -27,6 +31,8 @@ const getRefreshToken = () => {
 
   return refreshToken ? `Bearer ${parsedToken}` : '';
 };
+
+const httpLink = createHttpLink({ uri: `https://${API_BASE_URL}/graphql` });
 
 const authLink = setContext((_, { headers }) => {
   const accessToken = getAccessToken();
@@ -82,17 +88,29 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
   if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
+const wsLink = new WebSocketLink(
+  new SubscriptionClient(`ws://${API_BASE_URL}/websocket`, {
+    reconnect: true,
+    connectionParams: async () => ({ authorization: getAccessToken() })
+  })
+);
+
+const splittedLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+  },
+  wsLink,
+  httpLink
+);
+
 const { apolloClient, apolloClientForRefresh } = {
   apolloClient: new ApolloClient({
-    link: ApolloLink.from([
-      errorLink,
-      authLink,
-      createHttpLink({ uri: `https://${API_BASE_URL}/graphql` })
-    ]),
+    link: ApolloLink.from([errorLink, authLink, splittedLink]),
     cache: new InMemoryCache()
   }),
   apolloClientForRefresh: new ApolloClient({
-    link: createHttpLink({ uri: `https://${API_BASE_URL}/graphql` }),
+    link: httpLink,
     cache: new InMemoryCache()
   })
 };

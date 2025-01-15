@@ -14,3 +14,7 @@ export interface AuthResponseType {
 export interface RefreshTokenResponseType {
   refreshTokenV2: AuthResponseType;
 }
+
+export interface GetMeResponseType {
+  me: User;
+}
