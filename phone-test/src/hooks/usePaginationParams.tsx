@@ -24,6 +24,7 @@ export const usePaginationParams = ({ defaults }: Props) => {
   const onPageSizeChange = (quantity: number) => {
     setSearchParams(prev => {
       prev.set('pageSize', quantity.toString());
+      prev.set('page', '1');
       return prev;
     });
   };

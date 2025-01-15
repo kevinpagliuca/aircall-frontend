@@ -110,6 +110,14 @@ export const CallsListPage = () => {
               </Spacer>
             );
           })}
+
+        {!loading && groupedDataByDate.length === 0 && (
+          <Flex>
+            <Typography variant="displayS">
+              No calls to show {(callType || callDirection) && `with these filters.`}
+            </Typography>
+          </Flex>
+        )}
       </Spacer>
       {!!totalCount && (
         <PaginationWrapper>
