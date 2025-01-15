@@ -1,11 +1,11 @@
 import {
+  ArchiveFilled,
   ArchiveOutlined,
   Box,
   DiagonalDownOutlined,
   DiagonalUpOutlined,
   Flex,
   Grid,
-  Icon,
   Link,
   PlusOutlined,
   Typography
@@ -24,20 +24,24 @@ type Props = {
 
 const CallCard = ({ call }: Props) => {
   const navigate = useNavigate();
-
-  const icon = call.direction === 'inbound' ? DiagonalDownOutlined : DiagonalUpOutlined;
-  const title =
-    call.call_type === 'missed'
-      ? 'Missed call'
-      : call.call_type === 'answered'
-      ? 'Call answered'
-      : 'Voicemail';
-  const subtitle = call.direction === 'inbound' ? `from ${call.from}` : `to ${call.to}`;
-  const duration = formatDuration(call.duration / 1000);
-  const date = formatDate(call.created_at);
-  const notes = call.notes ? `Call has ${call.notes.length} notes` : <></>;
-
   const [addNoteIsOpen, setAddNoteIsOpen] = useState(false);
+
+  const DirectionIcon = call.direction === 'inbound' ? DiagonalDownOutlined : DiagonalUpOutlined;
+  const ArchiveIcon = call.is_archived ? ArchiveFilled : ArchiveOutlined;
+
+  const getCallTitle = () => {
+    switch (call.call_type) {
+      case 'missed': {
+        return 'Missed call';
+      }
+      case 'answered': {
+        return 'Call answered';
+      }
+      default: {
+        return 'Voicemail';
+      }
+    }
+  };
 
   return (
     <>
@@ -58,21 +62,23 @@ const CallCard = ({ call }: Props) => {
           py={2}
         >
           <Box>
-            <Icon component={icon} size={32} />
+            <DirectionIcon size={32} />
           </Box>
           <Box>
-            <Typography variant="body">{title}</Typography>
-            <Typography variant="body2">{subtitle}</Typography>
+            <Typography variant="body">{getCallTitle()}</Typography>
+            <Typography variant="body2">
+              {call.direction === 'inbound' ? `from ${call.from}` : `to ${call.to}`}
+            </Typography>
           </Box>
           <Box>
             <Typography variant="caption" textAlign="right">
-              {duration}
+              {formatDuration(call.duration / 1000)}
             </Typography>
-            <Typography variant="caption">{date}</Typography>
+            <Typography variant="caption">{formatDate(call.created_at)}</Typography>
           </Box>
         </Grid>
         <Box p={4}>
-          <Typography variant="caption">{notes}</Typography>
+          <Typography variant="caption">Call has {call.notes.length} notes</Typography>
         </Box>
 
         <Flex spaceX={4} p={4} borderTop="1px solid" borderTopColor="neutral-700">
@@ -89,8 +95,8 @@ const CallCard = ({ call }: Props) => {
               gap: '.25rem'
             }}
           >
-            <ArchiveOutlined size={24} />
-            Archive
+            <ArchiveIcon size={24} />
+            {call.is_archived ? `Unarchive` : `Archive`}
           </Link>
           <Link
             onClick={e => {

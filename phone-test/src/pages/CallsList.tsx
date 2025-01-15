@@ -20,6 +20,7 @@ const DEFAULT_PAGE_SIZE = 5;
 
 export const CallsListPage = () => {
   useSubscription(ON_UPDATED_CALL);
+
   const [callType, setCallType] = useState('');
   const [callDirection, setCallDirection] = useState('');
 
@@ -34,23 +35,26 @@ export const CallsListPage = () => {
     }
   });
 
-  const { totalCount = 0, calls } = useMemo(() => {
-    if (!data) return { totalCount: 0, calls: [] };
+  const totalCount = data?.paginatedCalls.totalCount || 0;
 
-    return {
-      totalCount: data.paginatedCalls.totalCount,
-      calls: data.paginatedCalls.nodes
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, loading]);
+  const groupedDataByDate = useMemo(() => {
+    const filteredCalls = data?.paginatedCalls.nodes.filter(item => {
+      const directionMatches =
+        !callDirection || callDirection === 'all' || callDirection === item.direction;
+      const typeMatches = !callType || callType === 'all' || callType === item.call_type;
+      return directionMatches && typeMatches;
+    });
 
-  const dataFiltered = calls.filter(item => {
-    const directionMatches =
-      !callDirection || callDirection === 'all' || callDirection === item.direction;
-    const typeMatches = !callType || callType === 'all' || callType === item.call_type;
+    const groups = filteredCalls?.reduce((acc, call) => {
+      const date = new Date(call.created_at).toDateString();
+      acc[date] = acc[date] ? [...acc[date], call] : [call];
+      return acc;
+    }, {} as Record<string, typeof filteredCalls>);
 
-    return directionMatches && typeMatches;
-  });
+    return Object.entries(groups || {}).sort(
+      ([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime()
+    );
+  }, [data?.paginatedCalls.nodes, callType, callDirection]);
 
   return (
     <Grid gap={6}>
@@ -90,13 +94,22 @@ export const CallsListPage = () => {
         </Grid>
       </Flex>
 
-      <Spacer space={4} direction="vertical" w="100%">
+      <Spacer space={8} direction="vertical" w="100%">
         {loading &&
           Array.from({ length: activePageSize }).map((_, item) => <CallCardSkeleton key={item} />)}
 
-        {dataFiltered?.map(call => (
-          <CallCard key={call.id} call={call} />
-        ))}
+        {!loading &&
+          groupedDataByDate.map(([group, calls]) => {
+            return (
+              <Spacer key={group} space={4} direction="vertical" w="100%">
+                <Typography variant="displayS">{group}</Typography>
+
+                {calls.map(call => (
+                  <CallCard key={call.id} call={call} />
+                ))}
+              </Spacer>
+            );
+          })}
       </Spacer>
       {!!totalCount && (
         <PaginationWrapper>
