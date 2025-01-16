@@ -89,7 +89,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 });
 
 const wsLink = new WebSocketLink(
-  new SubscriptionClient(`ws://${API_BASE_URL}/websocket`, {
+  new SubscriptionClient(`wss://${API_BASE_URL}/websocket`, {
     reconnect: true,
     connectionParams: async () => ({ authorization: getAccessToken() })
   })
